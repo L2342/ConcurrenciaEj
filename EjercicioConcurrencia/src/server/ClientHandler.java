@@ -43,11 +43,12 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             System.err.println("Conexión con cliente perdida.");
         } finally {
-            userManager.removerUsuarioPorSocket(nombreUsuario, clientSocket);
+            userManager.removerUsuarioPorSocket(clientSocket);
             try {
                 clientSocket.close();
             } catch (IOException e) {
             }
         }
+
     }
 }

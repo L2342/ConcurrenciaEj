@@ -1,48 +1,81 @@
-package client; 
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package client;
+
+/**
+ *
+ * @author Daniela F
+ */
+
+import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
 
 public class ClientApp {
-    public static void main(String[] args) {
-        try {
-            // Conecta al servidor en localhost y puerto 12345 (cambia según tu configuración)
-            Socket socket = new Socket("localhost", 12345);
-            System.out.println("Conectado al servidor.");
+    private Socket socket;
+    private BufferedReader input;
+    private PrintWriter output;
+    private ChatClientGUI gui;
 
-            // Streams para enviar y recibir mensajes
-            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
+    public ClientApp(String nombreUsuario) throws IOException {
+        socket = new Socket("localhost", 12345); 
+        input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        output = new PrintWriter(socket.getOutputStream(), true);
 
-            // Hilo para leer mensajes del servidor
-            Thread listener = new Thread(() -> {
-                try {
-                    String mensaje;
-                    while ((mensaje = input.readLine()) != null) {
-                        System.out.println("Servidor: " + mensaje);
-                    }
-                } catch (IOException e) {
-                    System.out.println("Desconectado del servidor.");
+       
+        output.println("/login " + nombreUsuario);
+
+        
+        String respuestaLogin = input.readLine();
+        if (respuestaLogin != null && respuestaLogin.startsWith("Error: Nombre de usuario no disponible")) {
+            socket.close(); 
+            throw new IOException("Nombre de usuario no disponible.");
+        }
+
+        
+        gui = new ChatClientGUI(this, nombreUsuario);
+        gui.setVisible(true);
+        gui.mostrarMensaje(respuestaLogin); // Mostramos la respuesta "OK: Te has logueado..."
+
+        
+        new Thread(() -> {
+            String mensaje;
+            try {
+                while ((mensaje = input.readLine()) != null) {
+                    System.out.println("DEBUG - Mensaje recibido: " + mensaje);
+                    gui.mostrarMensaje(mensaje);
                 }
-            });
-            listener.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
 
-            // Hilo principal para enviar mensajes
-            BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
-            String mensajeUsuario;
-            System.out.println("Escribe tus comandos (por ejemplo, /login <nombre>):");
-            while ((mensajeUsuario = consoleInput.readLine()) != null) {
-                output.println(mensajeUsuario);
-                if (mensajeUsuario.equalsIgnoreCase("/exit")) {
-                    break; // Salir del cliente
+    public void enviarMensaje(String mensaje) {
+        output.println(mensaje);
+    }
+
+    public void cerrarConexion() {
+        try {
+            output.println("/quit");
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            String nombreUsuario = JOptionPane.showInputDialog(null, "Ingresa tu nombre de usuario:");
+            if (nombreUsuario != null && !nombreUsuario.trim().isEmpty()) {
+                try {
+                    new ClientApp(nombreUsuario);
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(null, "Error al conectar al servidor: " + e.getMessage());
                 }
             }
-
-            // Cierre de recursos
-            socket.close();
-            consoleInput.close();
-            System.out.println("Cliente desconectado.");
-        } catch (IOException e) {
-            System.err.println("Error al conectar al servidor: " + e.getMessage());
-        }
+        });
     }
 }

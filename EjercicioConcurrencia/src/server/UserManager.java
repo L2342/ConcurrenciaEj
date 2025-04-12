@@ -1,23 +1,33 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package server;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+/**
+ *
+ * @author samue
+ */
 
 
-//Clase para gestionar los usuarios conectados al servidor.
+
 public class UserManager {
     private ConcurrentHashMap<String, Socket> usuarios = new ConcurrentHashMap<>();
-    public boolean agregarUsuario(String nombreUsuario, Socket socket) { //Agrega un usuario al sistema si el nombre no está en uso.
+    public boolean agregarUsuario(String nombreUsuario, Socket socket) {
         if (!usuarios.containsKey(nombreUsuario)) {
             usuarios.put(nombreUsuario, socket);
-            // Al agregar un nuevo usuario, notificar a todos los demás usuarios
             broadcast("Nuevo usuario conectado: " + nombreUsuario);
+            enviarListaUsuariosIndividual(socket);  
+            notificarListaUsuarios();
             return true;
         }
         return false;
     }
+
     public String getUsuarioPorSocket(Socket socket) {
         for (var entry : usuarios.entrySet()) {
             if (entry.getValue().equals(socket)) {
@@ -35,32 +45,50 @@ public class UserManager {
             }
         });
     }
+    public boolean removerUsuarioPorSocket(String nombreUsuario, Socket socket) {
+        String usuario = getUsuarioPorSocket(socket);
+        if (usuario != null) {
+            usuarios.remove(usuario);
+            broadcast("El usuario " + nombreUsuario + " se ha desconectado.");
+            notificarListaUsuarios(); 
+            return true;
+        }
+        return false;
+    }
+    
+
     public boolean contieneUsuario(String nombreUsuario) {
         return usuarios.containsKey(nombreUsuario);
     }
     public Set<String> getListaUsuarios() {
+        
         return usuarios.keySet();
     }
-    public boolean removerUsuarioPorSocket(String nombreUsuario, Socket socket) {
-    String usuario = getUsuarioPorSocket(socket);
-    if (usuario != null) {
-        usuarios.remove(usuario);
-        broadcast("El usuario " + nombreUsuario + " se ha desconectado.");
-        return true;
-    }
-    return false;
-}
-
-// Método nuevo que solo requiere socket
-public boolean removerUsuarioPorSocket(Socket socket) {
-    String usuario = getUsuarioPorSocket(socket);
-    if (usuario != null) {
-        usuarios.remove(usuario);
-        broadcast("El usuario " + usuario + " se ha desconectado.");
-        return true;
-    }
-    return false;
-
     
+    public void notificarListaUsuarios() {
+        String lista = String.join(",", getListaUsuarios());
+        broadcast("/users " + lista); 
+    }
+    private void enviarListaUsuariosIndividual(Socket socket) {
+    try {
+        String lista = String.join(",", getListaUsuarios());
+        socket.getOutputStream().write(("/users " + lista + "\n").getBytes());
+        socket.getOutputStream().flush();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
 }
+
+    public boolean removerUsuarioPorSocket(Socket socket) {
+        String usuario = getUsuarioPorSocket(socket);
+        if (usuario != null) {
+            usuarios.remove(usuario);
+            broadcast("El usuario " + usuario + " se ha desconectado.");
+            notificarListaUsuarios(); 
+            return true;
+        }
+        return false;
+    }
+
 }
+
