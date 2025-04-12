@@ -12,6 +12,8 @@ package client;
 import java.awt.*;
 import java.io.*;
 import javax.swing.*;
+import java.util.List;
+import common.ClientObserver;
 
 public class ChatClientGUI extends JFrame {
 
@@ -27,6 +29,17 @@ public class ChatClientGUI extends JFrame {
         this.nombreUsuario = nombreUsuario;
         initComponents();
     }
+    // ClientObserver.java
+    public void update(List<String> users) {
+        SwingUtilities.invokeLater(() -> {
+            DefaultListModel<String> model = new DefaultListModel<>();
+            for (String user : users) {
+                model.addElement(user);  // Actualizar la lista de usuarios
+            }
+            jList1.setModel(model);  // Establecer el modelo de la lista
+        });
+    }
+
 
     private void enviarMensaje() {
         String texto = textField1.getText().trim();
