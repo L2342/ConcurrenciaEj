@@ -9,30 +9,45 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author samue
  */
 // esta clase es pa poder manejar cada cliente
-public class ClientHandler implements Runnable { // se usa runnable pa que cada instnacia puede ejcutarse en un hilo por separado
-    private Socket clientSocket;
-    private BufferedReader in;
-    private PrintWriter out;
-    public ClientHandler(Socket socket) {
-        this.clientSocket = socket;
+public class ClientHandler implements Runnable {
+    private final Socket clientSocket;
+    private final ProtocolHandler protocolHandler = new ProtocolHandler();
+    private final UserManager userManager = ServerSingleton.getInstancia().getUserManager();
+    private String nombreUsuario;
+    
+    public ClientHandler(Socket clientSocket) {
+        this.clientSocket = clientSocket;
     }
     @Override
     public void run() {
-        try{
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
-            
-        } catch (IOException ex) {
-            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
+
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                String response = protocolHandler.procesarInput(inputLine, userManager, clientSocket);
+                if (inputLine.startsWith("/login")) {
+                    String[] tokens = inputLine.split(" ", 2);
+                    if (tokens.length > 1) {
+                        nombreUsuario = tokens[1].trim(); 
+                    }
+                }
+                out.println(response);
+            }
+        } catch (IOException e) {
+            System.err.println("Conexión con cliente perdida.");
+        } finally {
+            userManager.removerUsuarioPorSocket(nombreUsuario, clientSocket);
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+            }
         }
     }
-    
 }

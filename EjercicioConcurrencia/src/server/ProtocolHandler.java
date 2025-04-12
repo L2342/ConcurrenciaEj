@@ -1,28 +1,56 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package server;
-
 import java.net.Socket;
-
-/**
- *
- * @author samue
- */
 public class ProtocolHandler {
-     public void procesarInput(String input, UserManager Usermanager, Socket clientSocket){
-         String[] tokens = input.split(" ",2);
-         String comando = tokens[0];
-         String response = "Error, Comando desconocido";
-         
-         switch(comando)
-         {
-             case "/login":
-                 if(tokens.length>1){
-                     String nombreUsuario = tokens[1];
-                     
-                 }
-         }
-     }
+    public String procesarInput(String input, UserManager userManager, Socket clientSocket) {
+        String[] tokens = input.split(" ", 2);
+        String comando = tokens[0];
+        String response = switch (comando) {
+            case "/login" -> manejarLogin(tokens, userManager, clientSocket);
+            case "/logout" -> manejarLogout(tokens, userManager, clientSocket);
+            case "/msg" -> manejarMensaje(tokens, userManager);
+            default -> "Error: Comando desconocido.";
+        };
+        return response;
+    }
+    private String manejarLogin(String[] tokens, UserManager userManager, Socket clientSocket) {
+        if(tokens.length>1){
+            String nombreUsuario = tokens[1].trim();
+            if (userManager.contieneUsuario(nombreUsuario)) {
+                return "Error: Nombre de usuario no disponible.";
+            }else{
+                userManager.agregarUsuario(nombreUsuario, clientSocket);
+                return "OK: Te has logueado al servidor como " + nombreUsuario + ".";
+            }
+        }else{
+            return "Error: Se requiere un nombre de usuario para ingresar al servidor.";
+        }
+    }
+    private String manejarLogout(String[] tokens, UserManager userManager, Socket clientSocket) {
+        if (tokens.length > 1) {
+            String nombreUsuario = tokens[1].trim();
+            userManager.removerUsuarioPorSocket(nombreUsuario, clientSocket);
+            return "OK: Has salido del servidor.";
+        } else {
+            return "Error: Se requiere un nombre de usuario para salir.";
+        }
+    }
+    private String manejarMensaje(String[] tokens, UserManager userManager) {
+    if(tokens.length>1){
+        String[] mensajeInput=tokens[1].split(":", 2); // Divide en "autor" y "mensaje"
+        if(mensajeInput.length>1){
+            String autor = mensajeInput[0].trim();
+            String mensaje = mensajeInput[1].trim();
+            // Broadcast del mensaje
+            String mensajeFormateado = autor + ": " + mensaje;
+            userManager.broadcast(mensajeFormateado);
+            return "Mensaje enviado.";
+        } else {
+            return "Error con el formato de envio";
+        }
+    } else {
+        return "Error: No se puede enviar un mensaje vacío.";
+    }
+    
+}
+
 }

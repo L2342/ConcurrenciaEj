@@ -4,10 +4,18 @@
  */
 package server;
 
+import java.io.IOException;
+
 /**
  *
  * @author samue
  */
 public class ServerApp {
-    
+    public static void main(String[] args) {
+        try {
+            ServerSingleton.getInstancia().startServer(12345);
+        } catch (IOException e) {
+            System.err.println("Error al iniciar el servidor: " + e.getMessage());
+        }
+    }
 }

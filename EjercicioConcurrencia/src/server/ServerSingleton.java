@@ -16,6 +16,11 @@ public class ServerSingleton {
     private static ServerSingleton instancia;
     private ServerSocket serverSocket;
     private boolean isRunning = false;
+    private UserManager userManager; 
+    
+    private ServerSingleton() {
+        userManager = new UserManager();
+    }
 
     public static ServerSingleton getInstancia() {
         if(instancia == null){
@@ -38,6 +43,9 @@ public class ServerSingleton {
         if(serverSocket!=null){
             serverSocket.close();
         }
+    }
+    public UserManager getUserManager() {
+        return userManager;
     }
     
 }
