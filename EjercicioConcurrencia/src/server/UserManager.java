@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package server;
 
 import java.io.IOException;
@@ -12,12 +8,6 @@ import common.ClientObserver;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-/**
- *
- * @author samue
- */
-
 
 public class UserManager {
     private ConcurrentHashMap<String, Socket> usuarios = new ConcurrentHashMap<>();
@@ -65,15 +55,13 @@ public class UserManager {
         });
     }
 
-    public boolean removerUsuarioPorSocket(String nombreUsuario, Socket socket) {
-        String usuario = getUsuarioPorSocket(socket);
+    public void removerUsuarioPorSocket(Socket clientsocket) {
+        String usuario = getUsuarioPorSocket(clientsocket);
         if (usuario != null) {
             usuarios.remove(usuario);
-            broadcast("El usuario " + nombreUsuario + " se ha desconectado.");
+            broadcast("El usuario " + usuario + " se ha desconectado.");
             notificarListaUsuarios();  
-            return true;
         }
-        return false;
     }
 
     public Set<String> getListaUsuarios() {
@@ -98,11 +86,8 @@ public class UserManager {
         }
     }
 
-    boolean contieneUsuario(String nombreUsuario) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public boolean contieneUsuario(String nombreUsuario) {
+        return usuarios.containsKey(nombreUsuario);
     }
 
-    void removerUsuarioPorSocket(Socket clientSocket) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 }

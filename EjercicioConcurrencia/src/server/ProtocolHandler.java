@@ -48,7 +48,7 @@ public class ProtocolHandler {
     private String manejarLogout(String[] tokens, UserManager userManager, Socket clientSocket) {
         if (tokens.length > 1) {
             String nombreUsuario = tokens[1].trim();
-            userManager.removerUsuarioPorSocket(nombreUsuario, clientSocket);
+            userManager.removerUsuarioPorSocket(clientSocket);
             return "OK: Has salido del servidor.";
         } else {
             return "Error: Se requiere un nombre de usuario para salir.";
