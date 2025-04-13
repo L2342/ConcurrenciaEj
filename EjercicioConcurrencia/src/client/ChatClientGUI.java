@@ -15,7 +15,7 @@ import javax.swing.*;
 import java.util.List;
 import common.ClientObserver;
 
-public class ChatClientGUI extends JFrame {
+public class ChatClientGUI extends JFrame implements ClientObserver {
 
     private JTextArea textArea1;
     private JTextField textField1;
@@ -23,23 +23,24 @@ public class ChatClientGUI extends JFrame {
     private JList<String> jList1;
     private ClientApp clientApp;
     private String nombreUsuario;
-
+    
+    @Override
+    public void update(List<String> users) {
+        SwingUtilities.invokeLater(() -> {
+            DefaultListModel<String> model = new DefaultListModel<>();
+            for (String user : users) {
+                model.addElement(user);
+            }
+            jList1.setModel(model);
+        });
+    }
+    
     public ChatClientGUI(ClientApp clientApp, String nombreUsuario) {
         this.clientApp = clientApp;
         this.nombreUsuario = nombreUsuario;
         initComponents();
     }
     // ClientObserver.java
-    public void update(List<String> users) {
-        SwingUtilities.invokeLater(() -> {
-            DefaultListModel<String> model = new DefaultListModel<>();
-            for (String user : users) {
-                model.addElement(user);  // Actualizar la lista de usuarios
-            }
-            jList1.setModel(model);  // Establecer el modelo de la lista
-        });
-    }
-
 
     private void enviarMensaje() {
         String texto = textField1.getText().trim();

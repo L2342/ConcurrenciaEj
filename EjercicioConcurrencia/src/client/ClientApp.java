@@ -36,7 +36,23 @@ public class ClientApp {
             try {
                 while ((mensaje = input.readLine()) != null) {
                     System.out.println("DEBUG - Mensaje recibido: " + mensaje);
-                    gui.mostrarMensaje(mensaje);
+
+                    // Si es un mensaje de notificación de lista de usuarios
+                    if (mensaje.contains("LISTA_USUARIOS:")) {
+                        // Extraer la parte después de "LISTA_USUARIOS:"
+                        String listaUsuarios = mensaje.substring(mensaje.indexOf("LISTA_USUARIOS:") + "LISTA_USUARIOS:".length());
+                        String[] usuarios = listaUsuarios.split(",");
+
+                        // Crear lista y notificar al observador (GUI)
+                        java.util.List<String> listaUsuariosList = new java.util.ArrayList<>();
+                        for (String usuario : usuarios) {
+                            listaUsuariosList.add(usuario.trim());
+                        }
+                        gui.update(listaUsuariosList);
+                    } else {
+                        // Es un mensaje normal
+                        gui.mostrarMensaje(mensaje);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();

@@ -8,6 +8,8 @@ import common.ClientObserver;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import mssg.Mensaje;
+import mssg.MensajeFactory;
 
 public class UserManager {
     private ConcurrentHashMap<String, Socket> usuarios = new ConcurrentHashMap<>();
@@ -17,7 +19,8 @@ public class UserManager {
     public boolean agregarUsuario(String nombreUsuario, Socket socket) {
         if (!usuarios.containsKey(nombreUsuario)) {
             usuarios.put(nombreUsuario, socket);
-            broadcast("Nuevo usuario conectado: " + nombreUsuario);
+            Mensaje mensaje = MensajeFactory.crearMensaje("notificacion", "Nuevo usuario conectado " + nombreUsuario + ".");
+            broadcast(mensaje);
             enviarListaUsuariosIndividual(socket);  
             notificarListaUsuarios();  
             return true;
@@ -25,15 +28,14 @@ public class UserManager {
         return false;
     }
 
-    
+    // En UserManager
     public void notificarListaUsuarios() {
-        List<String> listaUsuarios = new ArrayList<>(getListaUsuarios());  
-        for (ClientObserver observer : observers) {
-            observer.update(listaUsuarios);  
-        }
+        List<String> listaUsuarios = new ArrayList<>(usuarios.keySet());
+        // Crear mensaje con formato especial
+        Mensaje mensaje = MensajeFactory.crearMensaje("notificacion", "LISTA_USUARIOS:" + String.join(",", listaUsuarios));
+        broadcast(mensaje);
     }
 
-    
     public String getUsuarioPorSocket(Socket socket) {
         for (var entry : usuarios.entrySet()) {
             if (entry.getValue().equals(socket)) {
@@ -43,11 +45,11 @@ public class UserManager {
         return null;
     }
 
-    
-    public void broadcast(String mensaje) {
+    public void broadcast(Mensaje mensaje) {
+        String texto = mensaje.construirMensaje();
         usuarios.values().forEach(socket -> {
             try {
-                socket.getOutputStream().write((mensaje + "\n").getBytes());
+                socket.getOutputStream().write((texto + "\n").getBytes());
                 socket.getOutputStream().flush();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -59,7 +61,8 @@ public class UserManager {
         String usuario = getUsuarioPorSocket(clientsocket);
         if (usuario != null) {
             usuarios.remove(usuario);
-            broadcast("El usuario " + usuario + " se ha desconectado.");
+            Mensaje mensaje = MensajeFactory.crearMensaje("alerta", "El usuario " + usuario + " se ha desconectado.");
+            broadcast(mensaje);
             notificarListaUsuarios();  
         }
     }

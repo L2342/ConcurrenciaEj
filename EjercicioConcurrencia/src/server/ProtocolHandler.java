@@ -2,6 +2,8 @@
 package server;
 
 import java.net.Socket;
+import mssg.Mensaje;
+import mssg.MensajeFactory;
 
 public class ProtocolHandler {
     
@@ -25,9 +27,10 @@ public class ProtocolHandler {
 
        
         if (response == null && !input.startsWith("/")) {
-           
-            userManager.broadcast(input);
-            return null; 
+            // Crear un mensaje de tipo texto usando el factory
+            Mensaje mensaje = MensajeFactory.crearMensaje("texto", input);
+            userManager.broadcast(mensaje);
+            return null;
         }
 
         return response;
@@ -55,22 +58,24 @@ public class ProtocolHandler {
         }
     }
     private String manejarMensaje(String[] tokens, UserManager userManager) {
-    if(tokens.length>1){
-        String[] mensajeInput=tokens[1].split(":", 2); 
-        if(mensajeInput.length>1){
-            String autor = mensajeInput[0].trim();
-            String mensaje = mensajeInput[1].trim();
-            // Broadcast del mensaje
-            String mensajeFormateado = autor + ": " + mensaje;
-            userManager.broadcast(mensajeFormateado);
-            return "[✔]";
+        if(tokens.length > 1) {
+            String[] mensajeInput = tokens[1].split(":", 2); 
+            if(mensajeInput.length > 1) {
+                String autor = mensajeInput[0].trim();
+                String contenido = mensajeInput[1].trim();
+
+                // Formatear el mensaje completo
+                String mensajeFormateado = autor + ": " + contenido;
+                // Usar el factory para crear un mensaje de tipo texto
+                Mensaje mensaje = MensajeFactory.crearMensaje("texto", mensajeFormateado);
+                userManager.broadcast(mensaje);
+                return "[✔]";
+            } else {
+                return "Error con el formato de envio";
+            }
         } else {
-            return "Error con el formato de envio";
+            return "Error: No se puede enviar un mensaje vacío.";
         }
-    } else {
-        return "Error: No se puede enviar un mensaje vacío.";
     }
-    
-}
 
 }
