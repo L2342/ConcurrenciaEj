@@ -1,0 +1,36 @@
+**Reporte de Calidad: Evaluación de Mejoras para el Proyecto de Chat en Java**
+
+**Contexto:**
+El presente documento tiene como objetivo señalar recomendaciones de mejora en el código de un servidor de chat desarrollado en Java, utilizando una revisión manual de calidad inspirada en las métricas y buenas prácticas que herramientas como SonarQube proponen.
+
+---
+
+**1. Manejo de Excepciones y Logging Adecuado**
+Actualmente, el código contiene capturas de excepciones que, en algunos casos, simplemente imprimen el `stack trace` en consola o bien ignoran la excepción. Esto puede dificultar la trazabilidad y el mantenimiento del sistema en ambientes de producción.
+
+**Recomendación:**
+Integrar un sistema de logging formal como `java.util.logging`, `Log4j` o `SLF4J` para registrar las excepciones y eventos relevantes, incluyendo niveles de severidad (INFO, WARN, ERROR). Esto facilitará el monitoreo y la depuración.
+
+---
+
+**2. Aplicación Consistente de Principios SOLID**
+El código presenta clases con múltiples responsabilidades. Ejemplo de esto es la clase `UserManager`, que actualmente gestiona tanto la lista de usuarios como la notificación a observadores y la transmisión de mensajes.
+
+**Recomendación:**
+Separar la lógica de notificación de observadores en una clase específica (por ejemplo, `NotificadorDeUsuarios`) y delegar la responsabilidad, asegurando una aplicación más clara del principio de Responsabilidad Única (SRP).
+
+---
+
+**3. Validación de Datos de Entrada**
+La clase `ProtocolHandler` procesa comandos del cliente asumiendo que el formato de los mensajes es siempre correcto. Esto puede llevar a fallos no controlados si un cliente malicioso o defectuoso envía datos incompletos o corruptos.
+
+**Recomendación:**
+Incluir validaciones robustas en cada método que procese entradas, verificando que los datos cumplan con las estructuras esperadas antes de continuar con la ejecución del flujo lógico.
+
+---
+
+**Conclusión:**
+Estas recomendaciones están orientadas a fortalecer la estabilidad, mantenibilidad y seguridad del sistema, reduciendo posibles fallos en tiempo de ejecución y facilitando futuras ampliaciones o migraciones de código.
+
+Se sugiere adoptar estas prácticas durante el próximo ciclo de desarrollo o refactorización para lograr un software más robusto y profesional.
+

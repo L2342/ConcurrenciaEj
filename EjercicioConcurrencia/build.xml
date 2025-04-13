@@ -10,6 +10,18 @@
 <project name="EjercicioConcurrencia" default="default" basedir=".">
     <description>Builds, tests, and runs the project EjercicioConcurrencia.</description>
     <import file="nbproject/build-impl.xml"/>
+
+<target name="test-single" depends="compile">
+    <junitlauncher>
+        <classpath>
+            <path path="${build.test.classes.dir}"/>
+            <path path="${build.classes.dir}"/>
+            <fileset dir="lib/junit5" includes="*.jar"/>
+        </classpath>
+        <test name="${test.class}"/>
+    </junitlauncher>
+</target>
+
     <!--
 
     There exist several targets which are by default empty and which can be 
@@ -68,6 +80,17 @@
     the compile target as the regular run target does. Again, for a list of available 
     properties which you can use, check the target you are overriding in the
     nbproject/build-impl.xml file. 
+
+<target name="test-single" depends="compile">
+    <junitlauncher>
+        <classpath>
+            <path path="${build.test.classes.dir}"/>
+            <path path="${build.classes.dir}"/>
+            <fileset dir="lib/junit5" includes="*.jar"/>
+        </classpath>
+        <test name="${test.class}"/>
+    </junitlauncher>
+</target>
 
     -->
 </project>
